@@ -13,13 +13,13 @@
     "developer": "User",
     "description": "Buffers early jump inputs so they fire on the first legal frame.",
     "settings": {
-        "buffer-window": {
+        "buffer-frames": {
             "type": "int",
-            "name": "Buffer Window (ms)",
-            "description": "How long an early click is remembered.",
-            "default": 100,
-            "min": 10,
-            "max": 250,
+            "name": "Buffer Frames",
+            "description": "How many frames before landing an early click is remembered (1-10).",
+            "default": 5,
+            "min": 1,
+            "max": 10,
             "control": { "slider": true }
         },
         "buffer-rings": {
@@ -27,6 +27,21 @@
             "name": "Buffer Rings",
             "description": "Also fire buffered clicks when touching a ring/orb.",
             "default": true
+        },
+        "lookahead": {
+            "type": "bool",
+            "name": "Lookahead (experimental)",
+            "description": "Simulates ahead and waits to fire a buffered click on the frame that survives. May stutter or misbehave.",
+            "default": false
+        },
+        "lookahead-steps": {
+            "type": "int",
+            "name": "Lookahead Steps",
+            "description": "How many physics steps to simulate ahead (more = safer but slower).",
+            "default": 60,
+            "min": 20,
+            "max": 200,
+            "control": { "slider": true }
         },
         "safe-mode": {
             "type": "bool",
