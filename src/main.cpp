@@ -196,8 +196,25 @@ class $modify(BufferPlayLayer, PlayLayer) {
 
     // Try each possible fire time, simulate ahead, and pick the first one that survives.
     void planJump() {
+        // Only plan newly captured lookahead inputs. A normal buffered click
+        // must not keep restarting the lookahead simulation every frame.
+        if (!((g_buf[0].pending && g_buf[0].awaitPlan) ||
+              (g_buf[1].pending && g_buf[1].awaitPlan))) {
+            return;
+        }
+
         auto cp = this->createCheckpoint();
-        if (!cp) return;
+        if (!cp) {
+            // Fail open: don't leave a swallowed click waiting forever if a
+            // checkpoint can't be created. Let the normal update fire it.
+            for (auto& f : g_buf) {
+                if (f.pending && f.awaitPlan) {
+                    f.awaitPlan = false;
+                    f.notBefore = 0;
+                }
+            }
+            return;
+        }
         cp->retain();
 
         BufState saved0 = g_buf[0];
@@ -241,7 +258,8 @@ class $modify(BufferPlayLayer, PlayLayer) {
     void update(float dt) {
         if (!g_sim
             && lookaheadOn()
-            && (g_buf[0].pending || g_buf[1].pending)
+            && ((g_buf[0].pending && g_buf[0].awaitPlan) ||
+                (g_buf[1].pending && g_buf[1].awaitPlan))
             && m_player1
             && !m_player1->m_isDead) {
             this->planJump();
