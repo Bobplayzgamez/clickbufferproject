@@ -1,53 +1,356 @@
 {
-    "geode": "5.11.2",
-    "gd": {
-        "win": "2.2081",
-        "mac": "2.2081",
-        "android32": "2.2081",
-        "android64": "2.2081",
-        "ios": "2.2081"
+  "geode": "4.10.2",
+  "gd": {
+    "win": "2.2074"
+  },
+  "id": "user.click-buffer",
+  "name": "Click Buffer",
+  "version": "v1.1.0",
+  "developer": "User",
+  "description": "Buffers early inputs and improves input consistency across game modes.",
+  "settings": {
+    "guide": {
+      "type": "title",
+      "name": "Timing guide",
+      "description": "Timing windows are measured in ticks at the selected Game Speed (TPS). At 240 TPS, one tick is about 1/240 second; four ticks are about one frame at 60 FPS. -1 uses the Main Buffer Window, 0 turns a mode off, and positive values set a custom window."
     },
-    "version": "v1.0.0",
-    "id": "user.click-buffer",
-    "name": "Click Buffer",
-    "developer": "User",
-    "description": "Buffers early jump inputs so they fire on the first legal frame.",
-    "settings": {
-        "buffer-frames": {
-            "type": "int",
-            "name": "Buffer Frames",
-            "description": "How many frames before landing an early click is remembered (1-10).",
-            "default": 5,
-            "min": 1,
-            "max": 10,
-            "control": { "slider": true }
-        },
-        "buffer-rings": {
-            "type": "bool",
-            "name": "Buffer Rings",
-            "description": "Also fire buffered clicks when touching a ring/orb.",
-            "default": true
-        },
-        "lookahead": {
-            "type": "bool",
-            "name": "Lookahead (experimental)",
-            "description": "Simulates ahead and waits to fire a buffered click on the frame that survives. May stutter or misbehave.",
-            "default": false
-        },
-        "lookahead-steps": {
-            "type": "int",
-            "name": "Lookahead Steps",
-            "description": "How many physics steps to simulate ahead (more = safer but slower).",
-            "default": 60,
-            "min": 20,
-            "max": 200,
-            "control": { "slider": true }
-        },
-        "safe-mode": {
-            "type": "bool",
-            "name": "Safe Mode",
-            "description": "Run levels in test mode so no progress or stats are saved.",
-            "default": true
-        }
+    "stage": {
+      "type": "string",
+      "name": "Main Buffer Window",
+      "description": "Default timing window for modes set to -1. Bigger windows are more forgiving but can cause inputs to fire earlier or later than intended.",
+      "default": "4 ticks",
+      "one-of": [
+        "2 ticks",
+        "4 ticks",
+        "8 ticks",
+        "16 ticks",
+        "Off"
+      ]
+    },
+    "sec-ground": {
+      "type": "title",
+      "name": "Landing and orb modes",
+      "description": "Cube, Ball, Robot and Spider remember a released early click and fire it when you land or touch an orb."
+    },
+    "sec-safe-jump": {
+      "type": "title",
+      "name": "Predictive Cube Jump (Experimental)",
+      "description": "For grounded cube clicks, simulates now and delayed timings from a checkpoint. It chooses the earliest timing that survives the prediction horizon; if none survives or no checkpoint is available, it retries while the cube stays grounded rather than forcing an unchecked jump. Simulation can stutter."
+    },
+    "safe-jump": {
+      "type": "bool",
+      "name": "Safe Jump Timing",
+      "description": "Intercept grounded cube clicks and test candidate jump frames for survival before replaying the click. Experimental; checkpoint simulation can stutter. Use practice mode first.",
+      "default": true
+    },
+    "safe-jump-frames": {
+      "type": "int",
+      "name": "Safe Jump Window (frames)",
+      "description": "Maximum delay candidates to test for a survivable jump timing (1-10 frames, scaled by TPS). If none survives, it keeps retrying on later grounded frames.",
+      "default": 5,
+      "min": 1,
+      "max": 10,
+      "control": {
+        "slider": true
+      }
+    },
+    "safe-jump-horizon": {
+      "type": "int",
+      "name": "Prediction Horizon (physics steps)",
+      "description": "How far after a candidate jump to simulate when checking survival. Longer horizons can catch later collisions but take more time.",
+      "default": 90,
+      "min": 30,
+      "max": 200,
+      "control": {
+        "slider": true
+      }
+    },
+    "cube-ticks": {
+      "type": "int",
+      "name": "Cube Window (ticks)",
+      "description": "How early a released click can be remembered before landing or touching an orb. -1 uses the main window; 0 disables buffering.",
+      "default": -1,
+      "min": -1,
+      "max": 64,
+      "control": {
+        "input": true,
+        "arrows": true,
+        "slider": false
+      }
+    },
+    "ball-ticks": {
+      "type": "int",
+      "name": "Ball Window (ticks)",
+      "description": "How early a released click can be remembered before landing or touching an orb. -1 uses the main window; 0 disables buffering.",
+      "default": -1,
+      "min": -1,
+      "max": 64,
+      "control": {
+        "input": true,
+        "arrows": true,
+        "slider": false
+      }
+    },
+    "robot-ticks": {
+      "type": "int",
+      "name": "Robot Window (ticks)",
+      "description": "How early a released click can be remembered before landing or touching an orb. -1 uses the main window; 0 disables buffering.",
+      "default": -1,
+      "min": -1,
+      "max": 64,
+      "control": {
+        "input": true,
+        "arrows": true,
+        "slider": false
+      }
+    },
+    "spider-ticks": {
+      "type": "int",
+      "name": "Spider Window (ticks)",
+      "description": "How early a released click can be remembered before touching a surface or orb. -1 uses the main window; 0 disables buffering.",
+      "default": -1,
+      "min": -1,
+      "max": 64,
+      "control": {
+        "input": true,
+        "arrows": true,
+        "slider": false
+      }
+    },
+    "sec-fly": {
+      "type": "title",
+      "name": "Flying modes",
+      "description": "Ship, UFO and Swing taps can be stretched to a minimum hold duration. Wave has its own timing modes."
+    },
+    "ship-ticks": {
+      "type": "int",
+      "name": "Ship Window (ticks)",
+      "description": "Minimum duration for short ship taps. -1 uses the main window; 0 disables it.",
+      "default": -1,
+      "min": -1,
+      "max": 64,
+      "control": {
+        "input": true,
+        "arrows": true,
+        "slider": false
+      }
+    },
+    "ufo-ticks": {
+      "type": "int",
+      "name": "UFO Window (ticks)",
+      "description": "Minimum duration for short UFO taps. -1 uses the main window; 0 disables it.",
+      "default": -1,
+      "min": -1,
+      "max": 64,
+      "control": {
+        "input": true,
+        "arrows": true,
+        "slider": false
+      }
+    },
+    "swing-ticks": {
+      "type": "int",
+      "name": "Swing Window (ticks)",
+      "description": "Minimum duration for short swing taps. -1 uses the main window; 0 disables it.",
+      "default": -1,
+      "min": -1,
+      "max": 64,
+      "control": {
+        "input": true,
+        "arrows": true,
+        "slider": false
+      }
+    },
+    "wave-ticks": {
+      "type": "int",
+      "name": "Wave Window (ticks)",
+      "description": "Strength of Min Hold, Min Gap or Grid timing. -1 uses the main window but is capped at 8 ticks; 0 disables wave timing.",
+      "default": -1,
+      "min": -1,
+      "max": 64,
+      "control": {
+        "input": true,
+        "arrows": true,
+        "slider": false
+      }
+    },
+    "wave-mode": {
+      "type": "string",
+      "name": "Wave Mode",
+      "description": "Min Hold stretches short taps. Min Gap enforces a minimum pause after release. Grid snaps presses and releases to a fixed timing grid. Change while paused.",
+      "default": "Grid",
+      "one-of": [
+        "Min Hold",
+        "Min Gap",
+        "Grid"
+      ]
+    },
+    "sec-keys": {
+      "type": "title",
+      "name": "Hotkeys",
+      "description": "Windows hotkeys used during a level. Choose None to disable a hotkey."
+    },
+    "key-stage": {
+      "type": "string",
+      "name": "Key: Cycle Main Window",
+      "description": "Cycles the main window through 2, 4, 8, 16 ticks and Off.",
+      "default": "F6",
+      "one-of": [
+        "None",
+        "F1",
+        "F2",
+        "F3",
+        "F4",
+        "F5",
+        "F6",
+        "F7",
+        "F8",
+        "F9",
+        "F10",
+        "F11",
+        "F12",
+        "Insert",
+        "Delete",
+        "Home",
+        "End",
+        "Page Up",
+        "Page Down"
+      ]
+    },
+    "key-tps-up": {
+      "type": "string",
+      "name": "Key: TPS Up",
+      "description": "Selects the next Game Speed (TPS) preset.",
+      "default": "F7",
+      "one-of": [
+        "None",
+        "F1",
+        "F2",
+        "F3",
+        "F4",
+        "F5",
+        "F6",
+        "F7",
+        "F8",
+        "F9",
+        "F10",
+        "F11",
+        "F12",
+        "Insert",
+        "Delete",
+        "Home",
+        "End",
+        "Page Up",
+        "Page Down"
+      ]
+    },
+    "key-tps-down": {
+      "type": "string",
+      "name": "Key: TPS Down",
+      "description": "Selects the previous Game Speed (TPS) preset.",
+      "default": "F8",
+      "one-of": [
+        "None",
+        "F1",
+        "F2",
+        "F3",
+        "F4",
+        "F5",
+        "F6",
+        "F7",
+        "F8",
+        "F9",
+        "F10",
+        "F11",
+        "F12",
+        "Insert",
+        "Delete",
+        "Home",
+        "End",
+        "Page Up",
+        "Page Down"
+      ]
+    },
+    "key-debug": {
+      "type": "string",
+      "name": "Key: Debug Logging",
+      "description": "Toggles diagnostic logging.",
+      "default": "F9",
+      "one-of": [
+        "None",
+        "F1",
+        "F2",
+        "F3",
+        "F4",
+        "F5",
+        "F6",
+        "F7",
+        "F8",
+        "F9",
+        "F10",
+        "F11",
+        "F12",
+        "Insert",
+        "Delete",
+        "Home",
+        "End",
+        "Page Up",
+        "Page Down"
+      ]
+    },
+    "key-wave": {
+      "type": "string",
+      "name": "Key: Cycle Wave Mode",
+      "description": "Switches Min Hold, Min Gap and Grid. Best used while paused.",
+      "default": "F10",
+      "one-of": [
+        "None",
+        "F1",
+        "F2",
+        "F3",
+        "F4",
+        "F5",
+        "F6",
+        "F7",
+        "F8",
+        "F9",
+        "F10",
+        "F11",
+        "F12",
+        "Insert",
+        "Delete",
+        "Home",
+        "End",
+        "Page Up",
+        "Page Down"
+      ]
+    },
+    "sec-general": {
+      "type": "title",
+      "name": "General",
+      "description": "Settings that apply to every mode."
+    },
+    "tps": {
+      "type": "string",
+      "name": "Game Speed (TPS)",
+      "description": "Set this to the TPS you actually use. It converts timing ticks to real time; it does not change the game's speed. Use 240 if you have not changed the game TPS.",
+      "default": "240",
+      "one-of": [
+        "60",
+        "120",
+        "240",
+        "360",
+        "480",
+        "720",
+        "960",
+        "1000"
+      ]
+    },
+    "debug": {
+      "type": "bool",
+      "name": "Debug Logging",
+      "description": "Prints detailed input-buffer events to the Geode log. Leave disabled for normal play.",
+      "default": false
     }
+  }
 }
