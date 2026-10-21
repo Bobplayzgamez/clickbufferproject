@@ -1,39 +1,34 @@
 name: Build Geode Mod
 
 on:
-  workflow_dispatch:
   push:
-    branches: ["**"]
+    branches:
+      - "**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
-  build:
-    strategy:
-      fail-fast: false
-      matrix:
-        config:
-          - name: Windows
-            os: windows-latest
-          - name: macOS
-            os: macos-latest
-    name: Build ${{ matrix.config.name }}
-    runs-on: ${{ matrix.config.os }}
+  build-windows:
+    name: Build Windows (Geometry Dash 2.2074)
+    runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
-      - name: Build the mod
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Build with the SDK version declared in mod.json
+        id: geode-build
         uses: geode-sdk/build-geode-mod@main
         with:
-          bindings: geode-sdk/bindings
-          bindings-ref: main
-          combine: true
+          # Important: read .geode from mod.json instead of using the latest SDK.
+          # This project's mod.json pins Geode 4.10.2 for GD 2.2074.
+          sdk: given
+          target: Win64
 
-  package:
-    name: Package builds
-    runs-on: ubuntu-latest
-    needs: ["build"]
-    steps:
-      - uses: geode-sdk/build-geode-mod/combine@main
-        id: build
-      - uses: actions/upload-artifact@v4
+      - name: Upload Windows .geode package
+        uses: actions/upload-artifact@v4
         with:
-          name: Build Output
-          path: ${{ steps.build.outputs.build-output }}
+          name: ClickBuffer-GD-2.2074
+          path: ${{ steps.geode-build.outputs.build-output }}/*.geode
+          if-no-files-found: error
