@@ -40,7 +40,7 @@ class $modify(BufferedPlayer, PlayerObject) {
     };
 
     bool pushButton(PlayerButton btn) {
-        auto& f = *m_fields;
+        auto& f = *m_fields.operator->();
         if (btn != PlayerButton::Jump || f.injecting) {
             return PlayerObject::pushButton(btn);
         }
@@ -68,7 +68,7 @@ class $modify(BufferedPlayer, PlayerObject) {
     }
 
     void update(float dt) {
-        auto& f = *m_fields;
+        auto& f = *m_fields.operator->();
 
         if (f.releaseNext) {
             f.releaseNext = false;
@@ -210,7 +210,7 @@ namespace {
 }
 
 class $modify(ComboKeyDispatcher, CCKeyboardDispatcher) {
-    bool dispatchKeyboardMSG(enumKeyCodes key, bool down, bool repeat) {
+    bool dispatchKeyboardMSG(enumKeyCodes key, bool down, bool repeat, double timestamp) {
         if (key == KEY_LeftControl)  g_leftCtrl = down;
         if (key == KEY_RightControl) g_rightCtrl = down;
 
@@ -226,6 +226,6 @@ class $modify(ComboKeyDispatcher, CCKeyboardDispatcher) {
             return true;
         }
 
-        return CCKeyboardDispatcher::dispatchKeyboardMSG(key, down, repeat);
+        return CCKeyboardDispatcher::dispatchKeyboardMSG(key, down, repeat, timestamp);
     }
 };
